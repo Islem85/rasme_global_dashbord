@@ -484,7 +484,7 @@ else:
     })
 
     st.dataframe(
-        _disp, use_container_width=True,
+        _disp, width="stretch",
         height=min(560, 80 + 28 * min(len(_disp), 18)),
         hide_index=True,
     )
@@ -510,7 +510,7 @@ if not _bo_active.empty:
             "status_label":  ("Statut BAD" if lang == "FR" else "BAD status"),
         })
         st.dataframe(
-            _bo_disp, use_container_width=True,
+            _bo_disp, width="stretch",
             height=min(420, 80 + 28 * min(len(_bo_disp), 12)),
             hide_index=True,
         )
@@ -575,7 +575,7 @@ with col1:
             margin=dict(l=0, r=0, t=40, b=0), height=340,
         )
         dark_plotly(fig)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
 # Region × status stacked bar (translated legend)
 with col2:
@@ -601,7 +601,7 @@ with col2:
             bargap=0.2,
         )
         dark_plotly(fig)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
 # Delay distribution histogram
 with col3:
@@ -619,7 +619,7 @@ with col3:
         )
         fig.add_vline(x=0, line_color=PALETTE["neutral"], line_dash="dash")
         dark_plotly(fig)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
     else:
         st.caption(t("no_data", lang))
 
@@ -660,7 +660,7 @@ else:
                 legend=dict(orientation="h", yanchor="top", y=-0.05),
             )
             dark_plotly(fig)
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width="stretch")
         else:
             st.caption(t("no_data", lang))
 
@@ -688,7 +688,7 @@ else:
                 xaxis=dict(showgrid=False, showticklabels=False),
             )
             dark_plotly(fig)
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width="stretch")
         else:
             st.caption(t("no_data", lang))
 
@@ -717,7 +717,7 @@ else:
                 xaxis=dict(showgrid=False, showticklabels=False),
             )
             dark_plotly(fig)
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width="stretch")
         else:
             st.caption(t("no_data", lang))
 
@@ -793,7 +793,7 @@ else:
             yaxis=dict(title=""),
         )
         dark_plotly(fig)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
 
 # ── Operational pipeline table ────────────────────────────────────────────────
@@ -829,7 +829,7 @@ else:
     st.caption(t("n_records", lang, n=fmt_int(len(display))))
     st.dataframe(
         display,
-        use_container_width=True,
+        width="stretch",
         height=min(560, 80 + 28 * min(len(display), 18)),
         hide_index=True,
     )
@@ -1153,4 +1153,4 @@ else:
             yaxis=dict(title=""),
         )
         dark_plotly(fig)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
