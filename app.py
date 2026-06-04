@@ -40,17 +40,17 @@ _EMPTY_FILTERS: dict = {
 
 
 def _config_page() -> None:
-        st.set_page_config(
-                    page_title="AfDB · Field Portfolio Scorecard",
-                    page_icon="🌍",
-                    layout="wide",
-                    initial_sidebar_state="expanded",
-        )
+    st.set_page_config(
+                page_title="AfDB · Field Portfolio Scorecard",
+                page_icon="🌍",
+                layout="wide",
+                initial_sidebar_state="expanded",
+    )
 
 
 def main() -> None:
-        _config_page()
-        inject_css()
+    _config_page()
+    inject_css()
 
     lang = language_toggle()
     # Propagate the chosen language to the host page's <html lang> attribute
@@ -65,8 +65,8 @@ def main() -> None:
     # Sidebar filters live in session_state so each page renders the same
     # selections. Wrapped in try/except so a DB error never hides the sidebar.
     try:
-                st.session_state["filters"] = sidebar_filters(lang)
-except Exception as _e:
+            st.session_state["filters"] = sidebar_filters(lang)
+    except Exception as _e:
             logging.warning("sidebar_filters error: %s", _e)
             st.sidebar.error(
                 f"⚠ Erreur chargement filtres : {type(_e).__name__}\n\n{_e}"
@@ -78,8 +78,8 @@ except Exception as _e:
     # Sidebar portfolio assistant — appended after the filters so it sits at
         # the bottom of the sidebar and is available on every page.
         try:
-                    chat_widget(lang, st.session_state.get("filters", _EMPTY_FILTERS))
-except Exception as _e:
+                chat_widget(lang, st.session_state.get("filters", _EMPTY_FILTERS))
+    except Exception as _e:
             logging.warning("chat_widget error: %s", _e)
 
     pages = [
