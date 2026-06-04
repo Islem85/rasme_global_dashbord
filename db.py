@@ -68,13 +68,18 @@ CACHE_TTL = int(os.getenv("CACHE_TTL_SECONDS", "300"))
 
 @st.cache_resource(show_spinner=False)
 def engine() -> Engine:
-    user = quote_plus(os.getenv("PG_USER", "postgres"))
-    pwd  = quote_plus(os.getenv("PG_PASSWORD", ""))
-    host = os.getenv("PG_HOST", "localhost")
-    port = os.getenv("PG_PORT", "5432")
-    db_  = os.getenv("PG_DB",   "mapping")
-    ssl  = os.getenv("PG_SSLMODE", "prefer")
-    dsn = f"postgresql+psycopg2://{user}:{pwd}@{host}:{port}/{db_}?sslmode={ssl}"
+    # Priorité : DATABASE_URL (Neon/cloud) > variables PG_* individuelles
+    database_url = os.getenv("DATABASE_URL")
+    if database_url:
+        dsn = database_url.replace("postgresql://", "postgresql+psycopg2://", 1)
+    else:
+        user = quote_plus(os.getenv("PG_USER", "postgres"))
+        pwd  = quote_plus(os.getenv("PG_PASSWORD", ""))
+        host = os.getenv("PG_HOST", "localhost")
+        port = os.getenv("PG_PORT", "5432")
+        db_  = os.getenv("PG_DB",   "mapping")
+        ssl  = os.getenv("PG_SSLMODE", "prefer")
+        dsn  = f"postgresql+psycopg2://{user}:{pwd}@{host}:{port}/{db_}?sslmode={ssl}"
     return create_engine(dsn, pool_pre_ping=True, pool_recycle=1800)
 
 
