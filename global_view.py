@@ -12,7 +12,7 @@ Structure:
 
 from __future__ import annotations
 
-from datetime import datetimeh
+from datetime import datetime
 
 import plotly.express as px
 import plotly.graph_objects as go
