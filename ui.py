@@ -532,7 +532,7 @@ def particles_bg() -> None:
 
     js_literal = json.dumps(js_source)
 
-    components.html(
+    st.iframe(
         f"""
         <script>
         (function () {{
@@ -709,7 +709,7 @@ def set_html_lang(lang: str) -> None:
     """
     import streamlit.components.v1 as components
     locale = "fr-FR" if lang == "FR" else "en-US"
-    components.html(
+    st.iframe(
         f"<script>window.parent.document.documentElement.lang='{locale}';</script>",
         height=0,
     )
@@ -745,7 +745,7 @@ def sidebar_filters(lang: str) -> dict[str, Any]:
     # Small reset button: drop the widget state so both inputs fall back to the
     # full data range on the next rerun (equivalent to “no date filter”).
     if st.sidebar.button(t("clear_dates", lang), key="filter_date_clear",
-                         use_container_width=True):
+                         width="stretch"):
         st.session_state.pop("filter_date_from", None)
         st.session_state.pop("filter_date_to", None)
         st.rerun()
@@ -1170,7 +1170,7 @@ def pdf_export_button(lang: str = "FR") -> None:
     primary    = PALETTE["primary"]
     primary_dk = PALETTE["primary_dk"]
 
-    components.html(
+    st.iframe(
         f"""
         <style>
           html, body {{
