@@ -12,7 +12,7 @@ Structure:
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetimeh
 
 import plotly.express as px
 import plotly.graph_objects as go
@@ -526,7 +526,7 @@ try:
         _styler = (
             _disp.style
                  .format({_rate_col: "{:.2f}%"})
-                 .applymap(_rate_color, subset=[_rate_col])
+                 .map(_rate_color, subset=[_rate_col])
         )
         st.dataframe(
             _styler, use_container_width=True,
