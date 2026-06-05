@@ -246,7 +246,7 @@ kpi_row([
         t("country_projects", lang),
         fmt_int(country_projects_count),
         icon="project",
-        explainer=("Nombre total de projets actifs dans ce pays."
+        explainer=("Nombre total de projets actifs dans ce pays.")
                    if lang == "FR" else
                    "Total number of active projects
 breakdown = country_output_breakdown(country, country_filters)
