@@ -742,10 +742,7 @@ else:
         dark_plotly(fig)
         st.plotly_chart(fig, width="stretch")
 
-# ── RESTAURATION : Cartes de sites & chronologie de collecte ─────────────────
-# Cette section finale affiche l'historique chronologique et les détails individuels des sites.
-# Elle est totalement préservée et alignée avec les protections de types.
-
+# ── CHRONOLOGIE DE COLLECTE ──────────────────────────────────────────────────
 st.write("")
 timeline_df = country_timeline(country, country_filters)
 if not timeline_df.empty:
@@ -758,24 +755,26 @@ if not timeline_df.empty:
     import pandas as pd
     timeline_df = timeline_df.copy()
     
-    # 1. Conversion de la colonne de date en type datetime
+    # 1. Conversion de la colonne de date originale en type datetime
     timeline_df["collection_date"] = pd.to_datetime(timeline_df["collection_date"], errors="coerce")
     
     # 2. Extraction du mois (format YYYY-MM) pour l'axe X
     timeline_df["month"] = timeline_df["collection_date"].dt.strftime("%Y-%m")
     
-    # 3. Agrégation par mois et par statut pour compter les soumissions (Y)
-    # On compte le nombre de lignes (soumissions) par groupe
+    # 3. Agrégation par 'month' et la colonne brute réelle 'status' pour compter les lignes (soumissions)
     timeline_agg = (
-        timeline_df.groupby(["month", "status_label"], as_index=False)
+        timeline_df.groupby(["month", "status"], as_index=False)
         .size()
         .rename(columns={"size": "submissions"})
     )
     
-    # 4. Tri par ordre chronologique pour éviter les graphiques désordonnés
+    # 4. Création sécurisée de la colonne de traduction post-agrégation
+    timeline_agg["status_label"] = timeline_agg["status"].map(lambda s: status_label(s, lang))
+    
+    # 5. Tri chronologique strict de l'axe X
     timeline_agg = timeline_agg.sort_values("month")
     
-    # ── RENDU DU GRAPHIQUE ──────────────────────────────────────────────────
+    # ── RENDU DU GRAPHIQUE BARRES CHRONOLOGIQUE
     if not timeline_agg.empty:
         fig = px.bar(
             timeline_agg, 
@@ -798,87 +797,8 @@ if not timeline_df.empty:
         st.plotly_chart(fig, width="stretch")
     else:
         st.caption(t("no_data", lang))
-    # ── SÉCURISATION DES COLONNES (Anti-ValueError) ─────────────────────────
-    timeline_df = timeline_df.copy()
-    
-    # 1. Détection dynamique de la colonne X (Date / Mois)
-    # Cherche 'month', 'submission_month', ou prend la 1ère colonne disponible
-    col_x = "month"
-    if col_x not in timeline_df.columns:
-        for alternative in ["submission_month", "date", "period"]:
-            if alternative in timeline_df.columns:
-                col_x = alternative
-                break
-        else:
-            col_x = timeline_df.columns[0] # Repli sur la première colonne
-            
-    # 2. Détection dynamique de la colonne Y (Volume / Soumissions)
-    # Cherche 'submissions', 'n', 'count', ou prend la 2ème colonne disponible
-    col_y = "submissions"
-    if col_y not in timeline_df.columns:
-        for alternative in ["n", "count", "cnt", "total"]:
-            if alternative in timeline_df.columns:
-                col_y = alternative
-                break
-        else:
-            # On cherche une colonne numérique
-            numeric_cols = timeline_df.select_dtypes(include=['number']).columns
-            col_y = numeric_cols[0] if len(numeric_cols) > 0 else timeline_df.columns[-1]
 
-    # 3. Détection de la colonne Couleur (Statut)
-    if "status" in timeline_df.columns:
-        timeline_df["status_label"] = timeline_df["status"].map(lambda s: status_label(s, lang))
-        col_color = "status_label"
-    elif "status_label" in timeline_df.columns:
-        col_color = "status_label"
-    else:
-        col_color = None # Pas de coloration si la colonne est absente
-
-    # ── RENDU DU GRAPHIQUE ──────────────────────────────────────────────────
-    try:
-        fig = px.bar(
-            timeline_df, 
-            x=col_x, 
-            y=col_y, 
-            color=col_color,
-            color_discrete_map=status_color_map(lang) if col_color else None,
-            title=t("chart_timeline", lang),
-            labels={
-                col_x: "", 
-                col_y: t("submissions", lang), 
-                str(col_color): t("status", lang)
-            } if col_color else {col_x: "", col_y: t("submissions", lang)},
-        )
-        fig.update_layout(
-            margin=dict(l=0, r=0, t=40, b=0), height=280,
-            legend=dict(orientation="h", yanchor="top", y=-0.15, font=dict(size=9)) if col_color else None,
-        )
-        dark_plotly(fig)
-        st.plotly_chart(fig, width="stretch")
-        
-    except Exception as e:
-        # En cas d'autre problème d'interprétation par Plotly, on affiche le tableau proprement
-        st.warning("Impossible d'afficher le graphique en barres (colonnes incompatibles).")
-        st.dataframe(timeline_df, use_container_width=True)
-    
-    # Transformation et traduction des libellés temporels
-    timeline_df = timeline_df.copy()
-    timeline_df["status_label"] = timeline_df["status"].map(lambda s: status_label(s, lang))
-    
-    fig = px.bar(
-        timeline_df, x="month", y="submissions", color="status_label",
-        color_discrete_map=status_color_map(lang),
-        title=t("chart_timeline", lang),
-        labels={"month": "", "submissions": t("submissions", lang), "status_label": t("status", lang)},
-    )
-    fig.update_layout(
-        margin=dict(l=0, r=0, t=40, b=0), height=280,
-        legend=dict(orientation="h", yanchor="top", y=-0.15, font=dict(size=9)),
-    )
-    dark_plotly(fig)
-    st.plotly_chart(fig, width="stretch")
-
-# Section finale d'affichage des alertes sur l'état d'avancement
+# ── SECTION DES ALERTES / BLOCAGES INDIVIDUELS ───────────────────────────────
 issues_df = country_issues(country, country_filters)
 if not issues_df.empty:
     pillar_header(
@@ -887,15 +807,13 @@ if not issues_df.empty:
         description=t("pillar_issues_desc", lang),
     )
     
-    # Sécurisation des chaînes de caractères pour les fiches de sites
     for idx, g in issues_df.iterrows():
         raw_name = str(g.get("site_name") or "").strip()
         if not raw_name:
             raw_name = "Site sans nom" if lang == "FR" else "Unnamed Site"
         
-        # Troncature propre sans risque de plantage
         site_n = raw_name[:60] + ("…" if len(raw_name) > 62 else "")
         region = str(g.get("region_name") or "—")
+        issue_desc = str(g.get("issue_description") or "")
         
-        # Rendu sécurisé des éléments de l'interface
-        st.error(f"**{site_n}** ({region}) — {g.get('issue_description') or ''}")
+        st.error(f"**{site_n}** ({region}) — {issue_desc}")
