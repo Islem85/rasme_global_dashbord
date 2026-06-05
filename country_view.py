@@ -1048,6 +1048,7 @@ else:
 
         Project name is omitted from the meta line because the parent
         ``.tl-project`` wrapper already shows it — only region is kept.
+                """
        visits     = g["visits"]
         n_visits   = len(visits)
         _sn        = g["site_name"]
