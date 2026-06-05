@@ -1,5 +1,5 @@
 """
-AfDB Field Portfolio Monitoring · Streamlit entry point.
+AfDB Field Portfolio Monitoring &middot; Streamlit entry point.
 Run:
     streamlit run app.py
 
@@ -41,7 +41,7 @@ _EMPTY_FILTERS: dict = {
 
 def _config_page() -> None:
     st.set_page_config(
-        page_title="AfDB · Field Portfolio Scorecard",
+        page_title="AfDB &middot; Field Portfolio Scorecard",
         page_icon="🌍",
         layout="wide",
         initial_sidebar_state="expanded",
