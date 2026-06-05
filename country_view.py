@@ -780,7 +780,7 @@ timeline_agg = (
 timeline_agg = timeline_agg.sort_values("month")
     
     # ── RENDU DU GRAPHIQUE BARRES CHRONOLOGIQUE
-    if not timeline_agg.empty:
+if not timeline_agg.empty:
         fig = px.bar(
             timeline_agg, 
             x="month", 
