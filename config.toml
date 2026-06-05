@@ -1,0 +1,10 @@
+# ── Configuration de l'interface Streamlit ───────────────────────────────────
+# Ce fichier force Streamlit à afficher correctement la barre latérale.
+
+[sidebar]
+# Force la visibilité de la navigation générée par st.navigation
+showSidebarNavigation = true
+
+[client]
+# Permet de rafraîchir l'interface proprement lors des changements de filtres
+sidebarNavigation = "sidebar"
