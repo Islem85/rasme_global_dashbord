@@ -104,7 +104,7 @@ try:
 except Exception as _e:
     logging.warning("coverage_overview error: %s", _e)
     _bad_o, _cov, _cov_ok = {}, {}, False
-     PILLAR 1 · COVERAGE ─────────────────────────────────────────────────────
+# ── PILLAR 1 · COVERAGE ─────────────────────────────────────────────────────
 pillar_header(
       eyebrow=t("pillar_coverage_eyebrow", lang),
       title=t("pillar_coverage_title", lang),
