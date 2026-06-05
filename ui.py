@@ -711,7 +711,7 @@ def set_html_lang(lang: str) -> None:
     locale = "fr-FR" if lang == "FR" else "en-US"
     st.iframe(
         f"<script>window.parent.document.documentElement.lang='{locale}';</script>",
-        height=0,
+        height=1,
     )
 
 
