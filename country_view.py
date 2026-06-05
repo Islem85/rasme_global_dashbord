@@ -85,8 +85,6 @@ with c_proj:
     projects = country_projects(country, filters)
 
     # Group project titles that share the same SAP code into a single entry.
-    # Titles without a code, or whose code is unique within the country,
-    # remain standalone (existing behaviour).
     sap_to_titles: dict[str, list[str]] = {}
     standalone: list[str] = []
     for p in projects:
@@ -96,7 +94,7 @@ with c_proj:
         else:
             standalone.append(p)
 
-    group_titles: dict[str, list[str]] = {}   # sentinel value -> list of titles
+    group_titles: dict[str, list[str]] = {}
     project_options: list[str] = []
     for c, titles in sap_to_titles.items():
         if len(titles) > 1:
@@ -119,12 +117,9 @@ with c_proj:
             return t("all", lang)
         if p.startswith("__SAP__"):
             code = p[len("__SAP__"):]
-            # Prefer the canonical title from the SAP table; fall back to the
-            # shortest variant we actually found in the operational DB.
             name = sap.canonical_title_for(code) or min(group_titles[p], key=len)
             short = name if len(name) <= 80 else name[:79] + "…"
             return f"{code}  ·  {short}"
-        # Prefix the project title with its SAP code if we have one.
         return sap.label_with_code(p, max_len=80)
 
     project = st.selectbox(
@@ -134,7 +129,6 @@ with c_proj:
         key="project_pick",
     )
 
-# Build a country-scoped filter dict that includes the optional project filter.
 country_filters: dict = dict(filters)
 if project and project != "__ALL__":
     if project.startswith("__SAP__"):
@@ -142,11 +136,8 @@ if project and project != "__ALL__":
     else:
         country_filters["project"] = project
 
-# Display a prominent SAP-code chip
 if project and project != "__ALL__":
     sap_code = project[len("__SAP__"):] if project.startswith("__SAP__") else sap.code_for(project)
-
-    # Most recent collection date for the (project-narrowed) selection.
     last_dt = last_collection_date(country, country_filters)
     date_val = last_dt.strftime("%d %b %Y") if last_dt is not None else "—"
     date_lbl = "Dernière collecte" if lang == "FR" else "Last collection"
@@ -257,382 +248,4 @@ kpi_row([
         icon="project",
         explainer=("Nombre total de projets actifs dans ce pays."
                    if lang == "FR" else
-                   "Total number of active projects in this country."),
-    ),
-    kpi_card(
-        t("completion_rate", lang),
-        fmt_pct(row.get("completion_rate")),
-        tone="success",
-        delta=f"{delta_completion} {t('vs_global_avg', lang)}" if delta_completion else None,
-        delta_dir=dir_c,
-        icon="completion",
-        explainer=t("expl_completion", lang),
-    ),
-    kpi_card(
-        t("in_progress", lang),
-        fmt_int(row.get("in_progress")),
-        icon="duration",
-        explainer=t("expl_in_progress", lang),
-    ),
-    kpi_card(
-        t("at_risk_rate", lang),
-        fmt_pct(row.get("at_risk_rate")),
-        tone="danger" if (row.get("at_risk_rate") or 0) > 3 else "warning",
-        delta=f"{delta_risk} {t('vs_global_avg', lang)}" if delta_risk else None,
-        delta_dir=dir_r_visual,
-        icon="risk",
-        explainer=t("expl_at_risk", lang),
-    ),
-    kpi_card(
-        t("beneficiaries_direct", lang),
-        fmt_int(benef),
-        tone="success",
-        delta=f"{benef_pct:.1f} % {t('of_total', lang)}" if benef_pct else None,
-        icon="users",
-        explainer=t("expl_benef", lang),
-    ),
-])
-
-# ── Couverture Projets BAD (par pays) ───────────────────────────────────────
-_snap    = _bad_o.get("last_refresh") if _cov_ok else None
-_snap_s  = _snap.strftime("%Y-%m-%d") if hasattr(_snap, "strftime") else (str(_snap) if _snap else "—")
-_rate    = _cov["mapping_rate"] if _cov_ok else 0.0
-_rate_tn = "success" if _rate >= 80 else "warning" if _rate >= 50 else "danger"
-
-pillar_header(
-    eyebrow=("Couverture Projets BAD" if lang == "FR" else "Projets BAD coverage"),
-    title=(f"{country_label(country, lang)} · couverture du portefeuille"
-           if lang == "FR" else
-           f"{country_label(country, lang)} · portfolio coverage"),
-    description=(
-        f"Source : MapAfrica (snapshot du {_snap_s})."
-        if lang == "FR" else
-        f"Source: MapAfrica (snapshot dated {_snap_s})."
-    ),
-)
-
-_n_internal_c      = _cov.get("n_internal") or 0
-_n_internal_only_c = _cov.get("n_internal_only") or 0
-_n_with_bad_c      = _n_internal_c - _n_internal_only_c
-_corr_rate_c       = (100.0 * _n_with_bad_c / _n_internal_c) if _n_internal_c else 0.0
-_corr_tn_c         = "success" if _corr_rate_c >= 80 else "warning" if _corr_rate_c >= 50 else "danger"
-
-kpi_row([
-    kpi_card(
-        ("Projets cartographiés" if lang == "FR" else "Mapped projects"),
-        fmt_int(_n_internal_c),
-        tone="success", icon="project",
-        explainer=("Total des projets actifs suivis par RASME dans ce pays (= Projets actifs)."
-                   if lang == "FR" else
-                   "Total active projects monitored by RASME in this country (= Active projects)."),
-    ),
-    kpi_card(
-        ("Avec correspondance BAD" if lang == "FR" else "With BAD match"),
-        fmt_int(_n_with_bad_c),
-        tone="success", icon="check",
-        explainer=("Projets cartographiés ayant une correspondance dans la base BAD."
-                   if lang == "FR" else
-                   "Mapped projects matched to a record in the BAD database."),
-    ),
-    kpi_card(
-        ("Sans correspondance BAD" if lang == "FR" else "Without BAD match"),
-        fmt_int(_n_internal_only_c),
-        tone="warning" if _n_internal_only_c else "success",
-        icon="risk",
-        explainer=("Projets cartographiés sans correspondance dans la base BAD."
-                   if lang == "FR" else
-                   "Mapped projects with no match in the BAD database."),
-    ),
-    kpi_card(
-        ("Taux de correspondance" if lang == "FR" else "Match rate"),
-        fmt_pct(_corr_rate_c),
-        tone=_corr_tn_c, icon="duration",
-        explainer=("Avec correspondance BAD / Projets cartographiés."
-                   if lang == "FR" else
-                   "With BAD match / Mapped projects."),
-    ),
-])
-
-kpi_row([
-    kpi_card(
-        ("Projets actifs (BAD)" if lang == "FR" else "Active projects (BAD)"),
-        fmt_int(_cov["n_portfolio"]),
-        icon="globe",
-        explainer=("Projets BAD aux statuts Approved + Ongoing pour ce pays."
-                   if lang == "FR" else
-                   "BAD projects with status Approved + Ongoing for this country."),
-    ),
-    kpi_card(
-        ("Actifs cartographiés" if lang == "FR" else "Mapped active"),
-        fmt_int(_cov["n_mapped"]),
-        tone="success", icon="completion",
-        explainer=("Projets actifs avec ≥1 projet interne correspondant."
-                   if lang == "FR" else
-                   "Active projects with ≥1 matching internal project."),
-    ),
-    kpi_card(
-        ("Actifs non cartographiés" if lang == "FR" else "Active unmapped"),
-        fmt_int(_cov["n_unmapped"]),
-        tone="warning" if _cov["n_unmapped"] else "success",
-        icon="risk",
-        explainer=("Projets actifs sans monitoring interne — gap de couverture."
-                   if lang == "FR" else
-                   "Active projects without internal monitoring — coverage gap."),
-    ),
-    kpi_card(
-        ("Taux de couverture" if lang == "FR" else "Coverage rate"),
-        fmt_pct(_rate),
-        tone=_rate_tn, icon="duration",
-        explainer=("Actifs cartographiés / Projets actifs (BAD)."
-                   if lang == "FR" else
-                   "Mapped active / Active projects (BAD)."),
-    ),
-])
-
-kpi_row([
-    kpi_card(
-        ("Clôturés (BAD)" if lang == "FR" else "Completion (BAD)"),
-        fmt_int(_cov["n_completion"]),
-        icon="check",
-        explainer=("Projets BAD clôturés (Completion) attribués à ce pays."
-                   if lang == "FR" else
-                   "BAD Completion projects assigned to this country."),
-    ),
-    kpi_card(
-        ("Clôturés cartographiés" if lang == "FR" else "Completion mapped"),
-        fmt_int(_cov["n_completion_mapped"]),
-        icon="completion",
-        explainer=("Projets clôturés avec un suivi interne historique."
-                   if lang == "FR" else
-                   "Completion projects with historical internal data."),
-    ),
-    kpi_card(
-        ("Annulés cartographiés" if lang == "FR" else "Cancelled mapped"),
-        fmt_int(_cov["n_cancelled_mapped"]),
-        icon="risk",
-        explainer=("Projets annulés avec un suivi interne (rare)."
-                   if lang == "FR" else
-                   "Cancelled projects with internal data (rare)."),
-    ),
-], cols=3)
-
-# ── Tableau comparatif unifié ───────────────────────────────────────────────
-_cov_tbl = coverage_table(country)
-if _cov_tbl.empty:
-    st.caption(("Aucun projet actif interne pour ce pays."
-                if lang == "FR" else
-                "No internal active project for this country."))
-else:
-    _none_lbl = "—"
-    _disp = _cov_tbl[[
-        "code", "project_title", "all_titles",
-        "bad_code", "bad_title", "bad_country", "bad_status", "coverage_status",
-    ]].copy()
-    _disp["bad_code"]    = _disp["bad_code"].fillna(_none_lbl)
-    _disp["bad_title"]   = _disp["bad_title"].fillna(_none_lbl)
-    _disp["bad_country"] = _disp["bad_country"].fillna(_none_lbl)
-    _disp["bad_status"]  = _disp["bad_status"].fillna(_none_lbl)
-    _disp["all_titles"]  = _disp["all_titles"].fillna("")
-    _disp["code"]        = _disp["code"].fillna(_none_lbl)
-
-    if lang == "EN":
-        _disp["coverage_status"] = _disp["coverage_status"].map({
-            "Cartographié — Actif":       "Mapped — Active",
-            "Cartographié — Clôturé":     "Mapped — Completion",
-            "Cartographié — Annulé":      "Mapped — Cancelled",
-            "Cartographié — Autre pays":  "Mapped — Other country",
-            "Non cartographié":           "Unmapped",
-        }).fillna(_disp["coverage_status"])
-
-    _disp = _disp.rename(columns={
-        "code":            ("Code SAP" if lang == "FR" else "SAP code"),
-        "project_title":   ("Projet interne (titre canonique)"
-                            if lang == "FR" else "Internal project (canonical title)"),
-        "all_titles":      ("Autres titres trouvés" if lang == "FR" else "Other titles found"),
-        "bad_code":        ("Code BAD" if lang == "FR" else "BAD code"),
-        "bad_title":       ("Titre BAD" if lang == "FR" else "BAD title"),
-        "bad_country":     ("Pays BAD" if lang == "FR" else "BAD country"),
-        "bad_status":      ("Statut BAD" if lang == "FR" else "BAD status"),
-        "coverage_status": ("Couverture" if lang == "FR" else "Coverage"),
-    })
-
-    st.dataframe(
-        _disp, width="stretch",
-        height=min(560, 80 + 28 * min(len(_disp), 18)),
-        hide_index=True,
-    )
-    st.download_button(
-        ("Exporter CSV" if lang == "FR" else "Export CSV"),
-        data=_disp.to_csv(index=False).encode("utf-8-sig"),
-        file_name=f"couverture_BAD_{country}.csv",
-        mime="text/csv",
-    )
-
-_bo_active = bad_only_active(country)
-if not _bo_active.empty:
-    with st.expander(
-        (f"Projets BAD non cartographiés ({len(_bo_active)})"
-         if lang == "FR" else
-         f"Unmapped BAD projects ({len(_bo_active)})"),
-        expanded=False,
-    ):
-        _bo_disp = _bo_active[["code", "project_title", "status_label"]].rename(columns={
-            "code":          ("Code BAD" if lang == "FR" else "BAD code"),
-            "project_title": ("Titre BAD" if lang == "FR" else "BAD title"),
-            "status_label":  ("Statut BAD" if lang == "FR" else "BAD status"),
-        })
-        st.dataframe(
-            _bo_disp, width="stretch",
-            height=min(420, 80 + 28 * min(len(_bo_disp), 12)),
-            hide_index=True,
-        )
-
-# ── Country map ──────────────────────────────────────────────────────────────
-# Intégration de la sécurisation contre les valeurs manquantes (site_name = None)
-pillar_header(
-    eyebrow=t("pillar_geo_eyebrow", lang),
-    title=t("pillar_geo_title", lang) if lang == "EN" else "Localisation des sites du pays",
-    description=("Distribution géographique colorée par statut d'implémentation."
-                 if lang == "FR" else
-                 "Geographic distribution coloured by implementation status."),
-)
-pts = map_points({**country_filters, "country": country}, limit=4000)
-if pts.empty:
-    st.info(t("no_geo_data", lang))
-else:
-    pts = pts.copy()
-    pts["sector"] = pts["sector"].map(lambda s: sector_label(s, lang))
-    center_lat = float(pts["lat"].mean())
-    center_lon = float(pts["lon"].mean())
-    leaflet_map(
-        pts, lang,
-        height=480,
-        center=(center_lat, center_lon),
-        zoom=5,
-        point_cap=4000,
-        key=f"country_leaflet_{country}",
-        show_country_in_popup=False,
-    )
-
-# ── Three-chart row : funnel · region × status · delay distribution ─────────
-pillar_header(
-    eyebrow=t("pillar_breakdown_eyebrow", lang),
-    title=("Pipeline, régions et retards" if lang == "FR" else "Pipeline, regions and delays"),
-    description=("Trois angles pour comprendre le portefeuille du pays : la cascade Planifié → Achevé, "
-                 "la concentration régionale, et la distribution des retards."
-                 if lang == "FR" else
-                 "Three angles on the country portfolio: the Planned → Completed funnel, regional "
-                 "concentration, and the delay distribution."),
-)
-col1, col2, col3 = st.columns(3, gap="medium")
-
-with col1:
-    fnl = country_funnel(country, country_filters)
-    if not fnl.empty:
-        order = ["Planned", "In progress", "Completed"]
-        fnl_pivot = fnl.set_index("status").reindex(order).reset_index().fillna(0)
-        fig = go.Figure(go.Funnel(
-            y=[t("planned", lang), t("in_progress", lang), t("completed", lang)],
-            x=fnl_pivot["n"].tolist(),
-            marker=dict(color=[PALETTE["warning"], "#0066CC", PALETTE["success"]]),
-            textposition="inside",
-            textinfo="value+percent total",
-        ))
-        fig.update_layout(
-            title=t("chart_funnel", lang),
-            margin=dict(l=0, r=0, t=40, b=0), height=340,
-        )
-        dark_plotly(fig)
-        st.plotly_chart(fig, width="stretch")
-
-with col2:
-    rs = country_region_status(country, country_filters)
-    if not rs.empty:
-        rs_total = rs.groupby("region")["sites"].sum().sort_values()
-        order = rs_total.index.tolist()[-15:]
-        rs = rs[rs["region"].isin(order)].copy()
-        rs["status_label"] = rs["status"].map(lambda s: status_label(s, lang))
-        fig = px.bar(
-            rs, y="region", x="sites", color="status_label",
-            orientation="h",
-            color_discrete_map=status_color_map(lang),
-            title=t("chart_region_status", lang),
-            labels={"region": "", "sites": t("sites_total", lang),
-                    "status_label": t("status", lang)},
-            category_orders={"region": order},
-        )
-        fig.update_layout(
-            margin=dict(l=0, r=0, t=40, b=70), height=340,
-            legend=dict(orientation="h", yanchor="top", y=-0.18, x=0,
-                        font=dict(size=9), title_text=t("status", lang)),
-            bargap=0.2,
-        )
-        dark_plotly(fig)
-        st.plotly_chart(fig, width="stretch")
-
-with col3:
-    dl = country_delay_distribution(country, country_filters).dropna(subset=["delay_days"])
-    if not dl.empty:
-        fig = px.histogram(
-            dl, x="delay_days", nbins=24,
-            color_discrete_sequence=[PALETTE["warning"]],
-            title=t("chart_delay_dist", lang),
-            labels={"delay_days": t("delay_days", lang)},
-        )
-        fig.update_layout(
-            margin=dict(l=0, r=0, t=40, b=0), height=340,
-            showlegend=False,
-        )
-        fig.add_vline(x=0, line_color=PALETTE["neutral"], line_dash="dash")
-        dark_plotly(fig)
-        st.plotly_chart(fig, width="stretch")
-    else:
-        st.caption(t("no_data", lang))
-
-# ── Beneficiaries breakdown (gender, age, vulnerable groups) ────────────────
-pillar_header(
-    eyebrow=t("pillar_benef_eyebrow", lang),
-    title=t("pillar_benef_title", lang),
-    description=t("pillar_benef_desc", lang),
-)
-b = country_beneficiaries(country, country_filters)
-
-total_benef = float(b.get("total") or 0)
-if total_benef <= 0:
-    st.caption(t("no_data", lang))
-else:
-    bcol1, bcol2, bcol3 = st.columns(3, gap="medium")
-
-    with bcol1:
-        gender_df = [
-            (t("beneficiaries_women", lang), float(b.get("women")  or 0)),
-            (t("beneficiaries_men",   lang), float(b.get("men")    or 0)),
-            (t("beneficiaries_other", lang), float(b.get("other")  or 0)),
-        ]
-        gender_df = [(k, v) for k, v in gender_df if v > 0]
-        if gender_df:
-            fig = px.pie(
-                names=[k for k, _ in gender_df],
-                values=[v for _, v in gender_df],
-                hole=0.55,
-                title=t("benef_by_gender", lang),
-                color_discrete_sequence=[PALETTE["primary"], "#0066CC", PALETTE["muted"]],
-            )
-            fig.update_traces(textposition="inside", textinfo="percent",
-                              hovertemplate="<b>%{label}</b><br>%{value:,.0f} · %{percent}")
-            fig.update_layout(
-                margin=dict(l=0, r=0, t=40, b=0), height=300,
-                legend=dict(orientation="h", yanchor="top", y=-0.05),
-            )
-            dark_plotly(fig)
-            st.plotly_chart(fig, width="stretch")
-        else:
-            st.caption(t("no_data", lang))
-
-    with bcol2:
-        age_df = [
-            (t("beneficiaries_children_under_5", lang), float(b.get("children_under_5") or 0)),
-            (t("beneficiaries_children_5_18",    lang), float(b.get("children_5_18")    or 0)),
-            (t("beneficiaries_elderly",          lang), float(b.get("elderly")          or 0)),
-        ]
-        age_df
+                   "Total number of active projects
