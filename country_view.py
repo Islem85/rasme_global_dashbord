@@ -12,7 +12,7 @@ from mapper import leaflet_map
 from db import (
     bad_only_active,
     bad_overview,
-    country_beneficiaries,
+    country_beneficiaries,h
     country_delay_distribution,
     country_funnel,
     country_issues,
@@ -124,7 +124,7 @@ with c_proj:
             # shortest variant we actually found in the operational DB.
             name = sap.canonical_title_for(code) or min(group_titles[p], key=len)
             short = name if len(name) <= 80 else name[:79] + "…"
-            return f"{code}  ·  {short}"
+            return f"{code}   &middot;   {short}"
         # Prefix the project title with its SAP code if we have one.
         return sap.label_with_code(p, max_len=80)
 
@@ -320,9 +320,9 @@ _rate_tn = "success" if _rate >= 80 else "warning" if _rate >= 50 else "danger"
 
 pillar_header(
     eyebrow=("Couverture Projets BAD" if lang == "FR" else "Projets BAD coverage"),
-    title=(f"{country_label(country, lang)} · couverture du portefeuille"
+    title=(f"{country_label(country, lang)} &middot; couverture du portefeuille"
            if lang == "FR" else
-           f"{country_label(country, lang)} · portfolio coverage"),
+           f"{country_label(country, lang)} &middot; portfolio coverage"),
     description=(
         f"Source : MapAfrica (snapshot du {_snap_s})."
         if lang == "FR" else
@@ -543,7 +543,7 @@ else:
         show_country_in_popup=False,   # country is already obvious here
     )
 
-# ── Three-chart row : funnel · region × status · delay distribution ─────────
+# ── Three-chart row : funnel &middot; region × status &middot; delay distribution ─────────
 pillar_header(
     eyebrow=t("pillar_breakdown_eyebrow", lang),
     title=("Pipeline, régions et retards" if lang == "FR" else "Pipeline, regions and delays"),
@@ -655,7 +655,7 @@ else:
                 color_discrete_sequence=[PALETTE["primary"], "#0066CC", PALETTE["muted"]],
             )
             fig.update_traces(textposition="inside", textinfo="percent",
-                              hovertemplate="<b>%{label}</b><br>%{value:,.0f} · %{percent}")
+                              hovertemplate="<b>%{label}</b><br>%{value:,.0f} &middot; %{percent}")
             fig.update_layout(
                 margin=dict(l=0, r=0, t=40, b=0), height=300,
                 legend=dict(orientation="h", yanchor="top", y=-0.05),
@@ -901,7 +901,7 @@ else:
 
     projects_sorted = sorted(project_groups.items(), key=_proj_recency, reverse=True)
 
-    # Hint above the strip + counter (projects · sites)
+    # Hint above the strip + counter (projects &middot; sites)
     st.markdown(
         f"""
         <div style="display:flex;align-items:center;justify-content:space-between;
@@ -1131,7 +1131,7 @@ else:
               <div class="tl-project-header">
                 <div class="tl-project-name">{proj_n}</div>
                 <span class="tl-project-badge">
-                  {n_sites_p} {t('tl_project_sites', lang)} · {n_visits_p} {t('tl_visits', lang)}
+                  {n_sites_p} {t('tl_project_sites', lang)} &middot; {n_visits_p} {t('tl_visits', lang)}
                 </span>
               </div>
               {sites_html}
