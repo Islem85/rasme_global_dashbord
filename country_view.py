@@ -12,7 +12,7 @@ from mapper import leaflet_map
 from db import (
     bad_only_active,
     bad_overview,
-    country_beneficiaries,h
+    country_beneficiaries,
     country_delay_distribution,
     country_funnel,
     country_issues,
