@@ -1050,7 +1050,15 @@ else:
         """
         visits   = g["visits"]
         n_visits = len(visits)
-        site_n   = g["site_name"][:60] + ("…" if len(str(g["site_name"])) > 62 else "")
+        # 1. On s'assure que la valeur est convertie en chaîne de caractères propre (et vide si None)
+raw_name = str(g.get("site_name") or "").strip()
+
+# 2. Si le nom est vide, on lui donne une valeur par défaut textuelle
+if not raw_name:
+    raw_name = "Site sans nom" if lang == "FR" else "Unnamed Site"
+
+# 3. On applique la découpe de sécurité à 60 caractères
+site_n = raw_name[:60] + ("…" if len(raw_name) > 62 else "")
         region   = g["region_name"]
         latest_idx = len(visits) - 1   # last visit (sorted ascending)
 
