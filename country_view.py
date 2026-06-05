@@ -1048,20 +1048,21 @@ else:
         Project name is omitted from the meta line because the parent
         ``.tl-project`` wrapper already shows it — only region is kept.
         """
-        visits   = g["visits"]
-        n_visits = len(visits)
-        site_n   = g["site_name"][:60] + ("…" if len(str(g["site_name"])) > 62 else "")
-        region   = g["region_name"]
+        visits     = g["visits"]
+        n_visits   = len(visits)
+        _name      = str(g["site_name"]) if pd.notna(g["site_name"]) else ""
+        site_n     = _name[:60] + ("…" if len(_name) > 62 else "")
+        region     = g["region_name"]
         latest_idx = len(visits) - 1   # last visit (sorted ascending)
 
         cards_html = []
         for i, (_, row) in enumerate(visits.iterrows()):
-            url   = row.get("photo_1_url") or row.get("photo_2_url") or ""
-            date_str = row["collection_date"].strftime("%d %b %Y") \
-                       if row.get("collection_date") is not None else "—"
+            url        = row.get("photo_1_url") or row.get("photo_2_url") or ""
+            _dt        = row.get("collection_date")
+            date_str   = _dt.strftime("%d %b %Y") if pd.notna(_dt) else "—"
             status_v   = row.get("status") or ""
             status_lbl = status_label(status_v, lang) if status_v else "—"
-            scol = color_map.get(status_lbl, PALETTE["neutral"])
+            scol       = color_map.get(status_lbl, PALETTE["neutral"])
 
             badge = f'<span class="tl-visit-latest">{t("tl_latest", lang)}</span>' \
                     if i == latest_idx and n_visits > 1 else ""
