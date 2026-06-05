@@ -770,11 +770,12 @@ if not timeline_df.empty:
     
     # 4. Création sécurisée de la colonne de traduction post-agrégation
     timeline_df["status_label"] = timeline_df["status"].map(lambda s: status_label(s, lang))
-    timeline_agg = (
+# 4.1. Agrégation par la suite (en incluant maintenant 'status_label' sans erreur)
+timeline_agg = (
     timeline_df.groupby(["month", "status_label"], as_index=False)
     .size()
-    rename(columns={"size": "submissions"})
-    )
+    .rename(columns={"size": "submissions"})
+)
     # 5. Tri chronologique strict de l'axe X
     timeline_agg = timeline_agg.sort_values("month")
     
