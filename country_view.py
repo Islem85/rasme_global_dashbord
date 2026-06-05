@@ -1127,7 +1127,7 @@ else:
 
         st.markdown(
             f"""
-            <div class="tl-project">
+        <div class="tl-project">
               <div class="tl-project-header">
                 <div class="tl-project-name">{proj_n}</div>
                 <span class="tl-project-badge">
