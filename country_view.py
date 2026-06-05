@@ -800,7 +800,7 @@ if not timeline_agg.empty:
         )
         dark_plotly(fig)
         st.plotly_chart(fig, width="stretch")
-    else:
+else:
         st.caption(t("no_data", lang))
 
 # ── SECTION DES ALERTES / BLOCAGES INDIVIDUELS ───────────────────────────────
