@@ -777,7 +777,7 @@ timeline_agg = (
     .rename(columns={"size": "submissions"})
 )
     # 5. Tri chronologique strict de l'axe X
-    timeline_agg = timeline_agg.sort_values("month")
+timeline_agg = timeline_agg.sort_values("month")
     
     # ── RENDU DU GRAPHIQUE BARRES CHRONOLOGIQUE
     if not timeline_agg.empty:
