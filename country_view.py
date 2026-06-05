@@ -1056,12 +1056,31 @@ else:
         region     = g["region_name"]
         latest_idx = len(visits) - 1   # last visit (sorted ascending)
 
-        cards_html = []
         for i, (_, row) in enumerate(visits.iterrows()):
-            url        = row.get("photo_1_url") or row.get("photo_2_url") or ""
+            # ── URL image (KoboToolbox _attachments) ──────────────────────
+            _atts = row.get("_attachments") or []
+            if isinstance(_atts, str):          # parfois sérialisé en JSON string
+                import json
+                try:    _atts = json.loads(_atts)
+                except: _atts = []
+            if _atts and isinstance(_atts, list) and len(_atts) > 0:
+                _first = _atts[0]
+                url = (
+                    _first.get("download_medium_url") or
+                    _first.get("download_url") or
+                    _first.get("download_large_url") or ""
+                )
+            else:
+                url = ""
+            # ──────────────────────────────────────────────────────────────
             _dt        = row.get("collection_date")
-            date_str   = _dt.strftime("%d %b %Y") if pd.notna(_dt) else "—"
+            date_str   = _dt.strftime("%d %b %Y") if (_dt is not None and _dt == _dt) else "—"
             status_v   = row.get("status") or ""
+            status_lbl = status_label(status_v, lang) if status_v else "—"
+            scol       = color_map.get(status_lbl, PALETTE["neutral"])
+
+            badge = f'<span class="tl-visit-latest">{t("tl_latest", lang)}</span>' \
+                    if i == latest_idx and n_visits > 1 else ""
             status_lbl = status_label(status_v, lang) if status_v else "—"
             scol       = color_map.get(status_lbl, PALETTE["neutral"])
 
