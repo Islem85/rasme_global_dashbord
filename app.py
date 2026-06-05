@@ -44,27 +44,35 @@ def _config_page() -> None:
         page_title="AfDB · Field Portfolio Scorecard",
         page_icon="🌍",
         layout="wide",
-        initial_sidebar_state="expanded",  # Indique à Streamlit de l'ouvrir au chargement
+        initial_sidebar_state="expanded",
     )
 
-    # HACK CSS : Force l'affichage de la barre latérale sur grand écran
+    # HACK CSS ultra-précis pour bloquer la barre latérale ouverte à 320px
     st.markdown(
         """
         <style>
-            /* Force le conteneur de la sidebar à être visible */
+            /* Élimine le conteneur du bouton de fermeture */
             [data-testid="stSidebarCollapsedControl"] {
-                display: none !important; /* Cache le petit bouton '>' pour éviter qu'on puisse la fermer */
+                display: none !important;
             }
+            
+            /* Force l'élément principal de la sidebar à garder sa largeur */
             section[data-testid="stSidebar"] {
-                margin-left: 0px !important;
+                width: 320px !important;
+                min-width: 320px !important;
+                max-width: 320px !important;
                 transform: none !important;
                 transition: none !important;
+            }
+            
+            /* Ajuste la zone principale de l'application pour qu'elle ne chevauche pas */
+            div[data-testid="stAppViewBlockContainer"] {
+                margin-left: 0px !important;
             }
         </style>
         """,
         unsafe_allow_html=True
     )
-
 
 def main() -> None:
     # 1. Configuration de base et styles
