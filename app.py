@@ -49,14 +49,27 @@ def _config_page() -> None:
 
 
 def main() -> None:
+    # 1. Configuration de base et styles
     _config_page()
     inject_css()
 
+    # 2. Gestion de la langue
     lang = language_toggle()
     set_html_lang(lang)
 
+    # 3. Affichage du bandeau d'en-tête (logos)
     header_ribbon()
 
+    # 4. DÉCLARATION de la navigation (sans exécution immédiate)
+    # Cela permet à Streamlit de préparer la structure de la barre latérale
+    pages = [
+        st.Page("global_view.py", title=t("nav_global", lang), icon="🌍", default=True),
+        st.Page("country_view.py", title=t("nav_country", lang), icon="🇲🇦"),
+    ]
+    nav = st.navigation(pages, position="sidebar")
+
+    # 5. GÉNÉRATION DES FILTRES DANS LA BARRE LATÉRALE
+    # Ils viendront se positionner proprement sous le menu de navigation
     try:
         st.session_state["filters"] = sidebar_filters(lang)
     except Exception as _e:
@@ -68,18 +81,19 @@ def main() -> None:
         )
         st.session_state.setdefault("filters", _EMPTY_FILTERS)
 
+    # 6. Widget de Chatbot
     try:
         chat_widget(lang, st.session_state.get("filters", _EMPTY_FILTERS))
     except Exception as _e:
         logging.warning("chat_widget error: %s", _e)
 
-    pages = [
-        st.Page("global_view.py", title=t("nav_global", lang), icon="🌍", default=True),
-        st.Page("country_view.py", title=t("nav_country", lang), icon="🇦🇫"),
-    ]
-    st.navigation(pages, position="sidebar").run()
+    # 7. EXÉCUTION DE LA PAGE SÉLECTIONNÉE
+    # Le contenu du fichier (ex: global_view.py) est injecté ici au centre
+    nav.run()
 
+    # 8. Affichage du pied de page
     footer(lang, last_refresh=datetime.now().strftime("%Y-%m-%d %H:%M"))
 
 
-main()
+if __name__ == "__main__":
+    main()
