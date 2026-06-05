@@ -565,7 +565,7 @@ def particles_bg() -> None:
                 opacity: {{ value: 0.55, random: true,
                             anim: {{ enable: true, speed: 1, opacity_min: 0.25 }} }},
                 size:    {{ value: 3, random: true,
-                            anim: {{ enable: true, speed: 2, size_min: 1 }} }},
+                                 anim: {{ enable: true, speed: 2, size_min: 1 }} }},
                 line_linked: {{ enable: true, distance: 160, color: '#0288d1',
                                 opacity: 0.35, width: 1.1 }},
                 move: {{ enable: true, speed: 1.6, random: true, out_mode: 'bounce' }}
@@ -590,7 +590,7 @@ def particles_bg() -> None:
         }})();
         </script>
         """,
-        height=0,
+                height=1,
     )
 
 
