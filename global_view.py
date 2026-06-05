@@ -93,7 +93,7 @@ except Exception as _e:
     logging.warning("coverage_overview error: %s", _e)
     _bad_o, _cov, _cov_ok = {}, {}, False
 
-# ── PILLAR 1 · COVERAGE ─────────────────────────────────────────────────────
+# ── PILLAR 1 &middot; COVERAGE ─────────────────────────────────────────────────────
 pillar_header(
     eyebrow=t("pillar_coverage_eyebrow", lang),
     title=t("pillar_coverage_title", lang),
@@ -132,7 +132,7 @@ kpi_row([
     ),
 ], cols=4)
 
-# ── PILLAR 2 · DELIVERY HEALTH ──────────────────────────────────────────────
+# ── PILLAR 2 &middot; DELIVERY HEALTH ──────────────────────────────────────────────
 pillar_header(
     eyebrow=t("pillar_delivery_eyebrow", lang),
     title=t("pillar_delivery_title", lang),
@@ -168,7 +168,7 @@ kpi_row([
     ),
 ], cols=4)
 
-# ── PILLAR 3 · COUVERTURE PROJETS BAD ───────────────────────────────────────
+# ── PILLAR 3 &middot; COUVERTURE PROJETS BAD ───────────────────────────────────────
 if _cov_ok:
     _snap = _bad_o.get("last_refresh")
     _snap_s = _snap.strftime("%Y-%m-%d") if hasattr(_snap, "strftime") else (str(_snap) if _snap else "—")
@@ -285,7 +285,7 @@ else:
          "has loaded the projet_BAD table.")
     )
 
-# ── PILLAR 4 · GEOGRAPHIC DISTRIBUTION ──────────────────────────────────────
+# ── PILLAR 4 &middot; GEOGRAPHIC DISTRIBUTION ──────────────────────────────────────
 pillar_header(
     eyebrow=t("pillar_geo_eyebrow", lang),
     title=t("pillar_geo_title", lang),
@@ -306,19 +306,19 @@ else:
     )
     _total_sites = int(kpi.get("sites") or 0)
     _no_gps = max(_total_sites - len(pts), 0)
-    _gps_note_fr = f" · {_no_gps:,} site(s) sans coordonnées GPS (non affichés)" if _no_gps else ""
-    _gps_note_en = f" · {_no_gps:,} site(s) without GPS coordinates (not shown)" if _no_gps else ""
+    _gps_note_fr = f" &middot; {_no_gps:,} site(s) sans coordonnées GPS (non affichés)" if _no_gps else ""
+    _gps_note_en = f" &middot; {_no_gps:,} site(s) without GPS coordinates (not shown)" if _no_gps else ""
     st.caption(
-        (f"Carte Leaflet · fond Esri World Light Gray Canvas — {len(pts):,} sites "
+        (f"Carte Leaflet &middot; fond Esri World Light Gray Canvas — {len(pts):,} sites "
          f"géolocalisés affichés{_gps_note_fr} (regroupés en clusters ; zoomer pour "
          "les détacher, cliquer un point pour les détails). Couleurs = statut (voir légende)."
          if lang == "FR" else
-         f"Leaflet map · Esri World Light Gray Canvas basemap — {len(pts):,} geolocated "
+         f"Leaflet map &middot; Esri World Light Gray Canvas basemap — {len(pts):,} geolocated "
          f"sites shown{_gps_note_en} (clustered; zoom in to split them, click a marker "
          "for details). Colours = status (see legend).")
     )
 
-# ── PILLAR 5 · BREAKDOWNS ───────────────────────────────────────────────────
+# ── PILLAR 5 &middot; BREAKDOWNS ───────────────────────────────────────────────────
 pillar_header(
     eyebrow=t("pillar_breakdown_eyebrow", lang),
     title=t("pillar_breakdown_title", lang),
@@ -371,7 +371,7 @@ with col_b:
         )
         fig.update_traces(
             textposition="inside", textinfo="percent",
-            hovertemplate="<b>%{label}</b><br>%{value:,} sites · %{percent}",
+            hovertemplate="<b>%{label}</b><br>%{value:,} sites &middot; %{percent}",
         )
         fig.update_layout(
             margin=dict(l=0, r=0, t=44, b=0), height=460,
@@ -380,7 +380,7 @@ with col_b:
         dark_plotly(fig, title_size=16)
         st.plotly_chart(fig, width="stretch")
 
-# ── PILLAR 6 · TREND ────────────────────────────────────────────────────────
+# ── PILLAR 6 &middot; TREND ────────────────────────────────────────────────────────
 pillar_header(
     eyebrow=t("pillar_trend_eyebrow", lang),
     title=t("pillar_trend_title", lang),
@@ -429,7 +429,7 @@ try:
         
     if not _by_country.empty:
         pillar_header(
-            eyebrow=("Couverture Projets BAD · détail" if lang == "FR" else "Projets BAD coverage · detail"),
+            eyebrow=("Couverture Projets BAD &middot; détail" if lang == "FR" else "Projets BAD coverage &middot; detail"),
             title=("Couverture par pays" if lang == "FR" else "Coverage by country"),
             description=("Détail pays-par-pays : nombre de soumissions kobo, portefeuille BAD, projets cartographiés et taux." if lang == "FR" else "Per-country detail: kobo submissions, BAD portfolio, mapped projects and rate."),
         )
