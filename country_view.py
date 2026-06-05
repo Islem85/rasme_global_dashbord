@@ -748,12 +748,77 @@ else:
 
 st.write("")
 timeline_df = country_timeline(country, country_filters)
+st.write("")
+timeline_df = country_timeline(country, country_filters)
 if not timeline_df.empty:
     pillar_header(
         eyebrow=t("pillar_timeline_eyebrow", lang),
         title=t("pillar_timeline_title", lang),
         description=t("pillar_timeline_desc", lang),
     )
+    
+    # ── SÉCURISATION DES COLONNES (Anti-ValueError) ─────────────────────────
+    timeline_df = timeline_df.copy()
+    
+    # 1. Détection dynamique de la colonne X (Date / Mois)
+    # Cherche 'month', 'submission_month', ou prend la 1ère colonne disponible
+    col_x = "month"
+    if col_x not in timeline_df.columns:
+        for alternative in ["submission_month", "date", "period"]:
+            if alternative in timeline_df.columns:
+                col_x = alternative
+                break
+        else:
+            col_x = timeline_df.columns[0] # Repli sur la première colonne
+            
+    # 2. Détection dynamique de la colonne Y (Volume / Soumissions)
+    # Cherche 'submissions', 'n', 'count', ou prend la 2ème colonne disponible
+    col_y = "submissions"
+    if col_y not in timeline_df.columns:
+        for alternative in ["n", "count", "cnt", "total"]:
+            if alternative in timeline_df.columns:
+                col_y = alternative
+                break
+        else:
+            # On cherche une colonne numérique
+            numeric_cols = timeline_df.select_dtypes(include=['number']).columns
+            col_y = numeric_cols[0] if len(numeric_cols) > 0 else timeline_df.columns[-1]
+
+    # 3. Détection de la colonne Couleur (Statut)
+    if "status" in timeline_df.columns:
+        timeline_df["status_label"] = timeline_df["status"].map(lambda s: status_label(s, lang))
+        col_color = "status_label"
+    elif "status_label" in timeline_df.columns:
+        col_color = "status_label"
+    else:
+        col_color = None # Pas de coloration si la colonne est absente
+
+    # ── RENDU DU GRAPHIQUE ──────────────────────────────────────────────────
+    try:
+        fig = px.bar(
+            timeline_df, 
+            x=col_x, 
+            y=col_y, 
+            color=col_color,
+            color_discrete_map=status_color_map(lang) if col_color else None,
+            title=t("chart_timeline", lang),
+            labels={
+                col_x: "", 
+                col_y: t("submissions", lang), 
+                str(col_color): t("status", lang)
+            } if col_color else {col_x: "", col_y: t("submissions", lang)},
+        )
+        fig.update_layout(
+            margin=dict(l=0, r=0, t=40, b=0), height=280,
+            legend=dict(orientation="h", yanchor="top", y=-0.15, font=dict(size=9)) if col_color else None,
+        )
+        dark_plotly(fig)
+        st.plotly_chart(fig, width="stretch")
+        
+    except Exception as e:
+        # En cas d'autre problème d'interprétation par Plotly, on affiche le tableau proprement
+        st.warning("Impossible d'afficher le graphique en barres (colonnes incompatibles).")
+        st.dataframe(timeline_df, use_container_width=True)
     
     # Transformation et traduction des libellés temporels
     timeline_df = timeline_df.copy()
