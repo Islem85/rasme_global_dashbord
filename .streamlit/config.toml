@@ -1,0 +1,5 @@
+[sidebar]
+showSidebarNavigation = true
+
+[client]
+sidebarNavigation = "sidebar"
