@@ -44,7 +44,25 @@ def _config_page() -> None:
         page_title="AfDB · Field Portfolio Scorecard",
         page_icon="🌍",
         layout="wide",
-        initial_sidebar_state="expanded",
+        initial_sidebar_state="expanded",  # Indique à Streamlit de l'ouvrir au chargement
+    )
+
+    # HACK CSS : Force l'affichage de la barre latérale sur grand écran
+    st.markdown(
+        """
+        <style>
+            /* Force le conteneur de la sidebar à être visible */
+            [data-testid="stSidebarCollapsedControl"] {
+                display: none !important; /* Cache le petit bouton '>' pour éviter qu'on puisse la fermer */
+            }
+            section[data-testid="stSidebar"] {
+                margin-left: 0px !important;
+                transform: none !important;
+                transition: none !important;
+            }
+        </style>
+        """,
+        unsafe_allow_html=True
     )
 
 
