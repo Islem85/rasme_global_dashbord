@@ -748,8 +748,6 @@ else:
 
 st.write("")
 timeline_df = country_timeline(country, country_filters)
-st.write("")
-timeline_df = country_timeline(country, country_filters)
 if not timeline_df.empty:
     pillar_header(
         eyebrow=t("pillar_timeline_eyebrow", lang),
@@ -757,6 +755,49 @@ if not timeline_df.empty:
         description=t("pillar_timeline_desc", lang),
     )
     
+    import pandas as pd
+    timeline_df = timeline_df.copy()
+    
+    # 1. Conversion de la colonne de date en type datetime
+    timeline_df["collection_date"] = pd.to_datetime(timeline_df["collection_date"], errors="coerce")
+    
+    # 2. Extraction du mois (format YYYY-MM) pour l'axe X
+    timeline_df["month"] = timeline_df["collection_date"].dt.strftime("%Y-%m")
+    
+    # 3. Agrégation par mois et par statut pour compter les soumissions (Y)
+    # On compte le nombre de lignes (soumissions) par groupe
+    timeline_agg = (
+        timeline_df.groupby(["month", "status_label"], as_index=False)
+        .size()
+        .rename(columns={"size": "submissions"})
+    )
+    
+    # 4. Tri par ordre chronologique pour éviter les graphiques désordonnés
+    timeline_agg = timeline_agg.sort_values("month")
+    
+    # ── RENDU DU GRAPHIQUE ──────────────────────────────────────────────────
+    if not timeline_agg.empty:
+        fig = px.bar(
+            timeline_agg, 
+            x="month", 
+            y="submissions", 
+            color="status_label",
+            color_discrete_map=status_color_map(lang),
+            title=t("chart_timeline", lang),
+            labels={
+                "month": "", 
+                "submissions": t("submissions", lang), 
+                "status_label": t("status", lang)
+            },
+        )
+        fig.update_layout(
+            margin=dict(l=0, r=0, t=40, b=0), height=280,
+            legend=dict(orientation="h", yanchor="top", y=-0.15, font=dict(size=9)),
+        )
+        dark_plotly(fig)
+        st.plotly_chart(fig, width="stretch")
+    else:
+        st.caption(t("no_data", lang))
     # ── SÉCURISATION DES COLONNES (Anti-ValueError) ─────────────────────────
     timeline_df = timeline_df.copy()
     
