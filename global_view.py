@@ -100,12 +100,11 @@ try:
       # Defensive check: coverage_overview must return a dict
       if not isinstance(_cov, dict):
                 raise ValueError(f"coverage_overview returned {type(_cov).__name__}, expected dict")
-            _cov_ok = True
+                    _cov_ok = True
 except Exception as _e:
     logging.warning("coverage_overview error: %s", _e)
     _bad_o, _cov, _cov_ok = {}, {}, False
-
-# ── PILLAR 1 · COVERAGE ─────────────────────────────────────────────────────
+     PILLAR 1 · COVERAGE ─────────────────────────────────────────────────────
 pillar_header(
       eyebrow=t("pillar_coverage_eyebrow", lang),
       title=t("pillar_coverage_title", lang),
