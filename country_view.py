@@ -774,6 +774,7 @@ if not timeline_df.empty:
         timeline_df.groupby(["month", "status_label"], as_index=False)
         .size()
         rename(columns={"size": "submissions"})
+    )
     # 5. Tri chronologique strict de l'axe X
     timeline_agg = timeline_agg.sort_values("month")
     
