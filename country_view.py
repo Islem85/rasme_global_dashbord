@@ -5,6 +5,7 @@ from __future__ import annotations
 import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
+import pandas as pd
 
 from config import PALETTE, country_label, sector_label, status_color_map, status_label
 from mapper import leaflet_map
