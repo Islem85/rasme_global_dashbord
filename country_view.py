@@ -1048,18 +1048,19 @@ else:
 
         Project name is omitted from the meta line because the parent
         ``.tl-project`` wrapper already shows it — only region is kept.
-        """
-        visits     = g["visits"]
+       visits     = g["visits"]
         n_visits   = len(visits)
-        _name      = str(g["site_name"]) if pd.notna(g["site_name"]) else ""
+        _sn        = g["site_name"]
+        _name      = str(_sn) if _sn is not None and _sn == _sn else ""
         site_n     = _name[:60] + ("…" if len(_name) > 62 else "")
         region     = g["region_name"]
         latest_idx = len(visits) - 1   # last visit (sorted ascending)
 
+        cards_html = []
         for i, (_, row) in enumerate(visits.iterrows()):
             # ── URL image (KoboToolbox _attachments) ──────────────────────
             _atts = row.get("_attachments") or []
-            if isinstance(_atts, str):          # parfois sérialisé en JSON string
+            if isinstance(_atts, str):
                 import json
                 try:    _atts = json.loads(_atts)
                 except: _atts = []
@@ -1081,12 +1082,6 @@ else:
 
             badge = f'<span class="tl-visit-latest">{t("tl_latest", lang)}</span>' \
                     if i == latest_idx and n_visits > 1 else ""
-            status_lbl = status_label(status_v, lang) if status_v else "—"
-            scol       = color_map.get(status_lbl, PALETTE["neutral"])
-
-            badge = f'<span class="tl-visit-latest">{t("tl_latest", lang)}</span>' \
-                    if i == latest_idx and n_visits > 1 else ""
-
             cards_html.append(
                 f'<div class="tl-visit tl-visit-wrapper">'
                 f'  {badge}'
