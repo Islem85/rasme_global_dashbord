@@ -249,3 +249,67 @@ kpi_row([
         explainer=("Nombre total de projets actifs dans ce pays."
                    if lang == "FR" else
                    "Total number of active projects
+breakdown = country_output_breakdown(country, country_filters)
+    breakdown = breakdown.dropna(subset=["category"])
+    breakdown = breakdown[breakdown["category"].astype(str).str.strip() != ""]
+    
+    if not breakdown.empty:
+        section(t("outputs_breakdown", lang))
+        sorted_b = breakdown.sort_values("occurrences").reset_index(drop=True)
+        fig = px.bar(
+            sorted_b,
+            y="category", x="occurrences", orientation="h",
+            color_discrete_sequence=[PALETTE["primary"]],
+            labels={"category": "", "occurrences": t("occurrences", lang)},
+        )
+        fig.update_layout(
+            margin=dict(l=0, r=20, t=40, b=0), height=400,
+            showlegend=False,
+        )
+        dark_plotly(fig)
+        st.plotly_chart(fig, width="stretch")
+
+# ── RESTAURATION : Cartes de sites & chronologie de collecte ─────────────────
+st.write("")
+timeline_df = country_timeline(country, country_filters)
+if not timeline_df.empty:
+    pillar_header(
+        eyebrow=t("pillar_timeline_eyebrow", lang),
+        title=t("pillar_timeline_title", lang),
+        description=t("pillar_timeline_desc", lang),
+    )
+    
+    timeline_df = timeline_df.copy()
+    timeline_df["status_label"] = timeline_df["status"].map(lambda s: status_label(s, lang))
+    
+    fig = px.bar(
+        timeline_df, x="month", y="submissions", color="status_label",
+        color_discrete_map=status_color_map(lang),
+        title=t("chart_timeline", lang),
+        labels={"month": "", "submissions": t("submissions", lang), "status_label": t("status", lang)},
+    )
+    fig.update_layout(
+        margin=dict(l=0, r=0, t=40, b=0), height=280,
+        legend=dict(orientation="h", yanchor="top", y=-0.15, font=dict(size=9)),
+    )
+    dark_plotly(fig)
+    st.plotly_chart(fig, width="stretch")
+
+# Section finale d'affichage des alertes sur l'état d'avancement
+issues_df = country_issues(country, country_filters)
+if not issues_df.empty:
+    pillar_header(
+        eyebrow=t("pillar_issues_eyebrow", lang),
+        title=t("pillar_issues_title", lang),
+        description=t("pillar_issues_desc", lang),
+    )
+    
+    for idx, g in issues_df.iterrows():
+        raw_name = str(g.get("site_name") or "").strip()
+        if not raw_name:
+            raw_name = "Site sans nom" if lang == "FR" else "Unnamed Site"
+        
+        site_n = raw_name[:60] + ("…" if len(raw_name) > 62 else "")
+        region = str(g.get("region_name") or "—")
+        
+        st.error(f"**{site_n}** ({region}) — {g.get('issue_description') or ''}")
