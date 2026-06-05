@@ -1060,9 +1060,8 @@ if not raw_name:
 # 3. On applique la découpe de sécurité à 60 caractères
 site_n = raw_name[:60] + ("…" if len(raw_name) > 62 else "")
 region   = g["region_name"]
-        latest_idx = len(visits) - 1   # last visit (sorted ascending)
-
-        cards_html = []
+latest_idx = len(visits) - 1   # last visit (sorted ascending)
+cards_html = []
         for i, (_, row) in enumerate(visits.iterrows()):
             url   = row.get("photo_1_url") or row.get("photo_2_url") or ""
             date_str = row["collection_date"].strftime("%d %b %Y") \
