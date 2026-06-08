@@ -1024,7 +1024,7 @@ else:
             for _, _r in _g["visits"].iterrows():
                 kobo_thumb_data_uri(_r.get("photo_1_url") or _r.get("photo_2_url") or "")
 
-   def _img_html(url: str) -> str:
+    def _img_html(url: str) -> str:
         """Miniature récupérée côté serveur ; sinon, le navigateur charge l'image
         directement, avec le repli rayé en arrière-plan."""
         if not url:
