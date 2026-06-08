@@ -977,8 +977,8 @@ else:
           background:#FFFFFF;border:1px solid {border};border-radius:10px;overflow:hidden;
           display:flex;flex-direction:column;
         }}
-        .tl-visit .tl-img-wrap { position:relative; }
-        .tl-visit .tl-img-wrap .tl-img-fallback { position:absolute; inset:0; }
+            .tl-visit .tl-img-wrap {{ position:relative; }}
+            .tl-visit .tl-img-wrap .tl-img-fallback {{ position:absolute; inset:0; }}
         .tl-visit .tl-img-wrap {{
           display:block;background:#F0F4F2;height:140px;overflow:hidden;
         }}
