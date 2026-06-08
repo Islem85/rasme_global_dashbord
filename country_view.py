@@ -1024,23 +1024,20 @@ else:
             for _, _r in _g["visits"].iterrows():
                 kobo_thumb_data_uri(_r.get("photo_1_url") or _r.get("photo_2_url") or "")
 
-    def _img_html(url: str) -> str:
-        """Render a server-fetched thumbnail wrapped in a link to the full-res
-        Kobo image, or a striped fallback when the attachment is missing /
-        unauthorised. The preview itself is the inline base64 thumbnail, so the
-        link target never affects whether the preview shows. The fallback is
-        decided here (not via an inline onerror handler, which Streamlit strips)."""
+   def _img_html(url: str) -> str:
+        """Miniature récupérée côté serveur ; sinon, le navigateur charge l'image
+        directement, avec le repli rayé en arrière-plan."""
+        if not url:
+            return ('<div class="tl-img-wrap"><div class="tl-img-fallback">'
+                    '📷 image indisponible</div></div>')
         data_uri = kobo_thumb_data_uri(url)
-        if data_uri:
-            return (
-                f'<a class="tl-img-wrap" href="{url}" target="_blank" rel="noopener" '
-                f'title="{t("tl_open_full", lang)}">'
-                f'<img src="{data_uri}" loading="lazy"/>'
-                f'</a>'
-            )
+        src = data_uri or url
         return (
-            '<div class="tl-img-wrap"><div class="tl-img-fallback">'
-            '📷 image indisponible</div></div>'
+            f'<a class="tl-img-wrap" href="{url}" target="_blank" rel="noopener" '
+            f'title="{t("tl_open_full", lang)}">'
+            f'<div class="tl-img-fallback">📷 image indisponible</div>'
+            f'<img src="{src}" loading="lazy" style="position:relative;z-index:1"/>'
+            f'</a>'
         )
 
     def _site_card_html(g: dict) -> str:
