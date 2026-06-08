@@ -104,9 +104,38 @@ def kobo_thumb_data_uri(url: Optional[str]) -> Optional[str]:
     or None if it's missing / unauthorised / not an image."""
     if not url:
         return None
-    # Kobo attachment URLs are auth-protected; public image URLs (e.g. a demo
-    # dataset) are not. Only require credentials for the former.
-    needs_auth = "kobotoolbox" in url.lower()
+
+    user  = os.getenv("KOBO_USER", "")
+    pwd   = os.getenv("KOBO_PASSWORD", "")
+    token = os.getenv("KOBO_TOKEN", "")
+
+    # Authentifier dès qu'on a des identifiants (ne pas se limiter aux URLs
+    # contenant "kobotoolbox", car les instances peuvent avoir un autre domaine).
+    headers = {"Authorization": f"Token {token}"} if token else {}
+    auth = HTTPBasicAuth(user, pwd) if (user and pwd and not token) else None
+
+    try:
+        resp = requests.get(
+            url, auth=auth, headers=headers,
+            timeout=30, allow_redirects=True,
+        )
+        if resp.status_code != 200:
+            print(f"[KOBO] HTTP {resp.status_code} pour {url}")   # visible dans les logs
+            return None
+        ctype = resp.headers.get("content-type", "")
+        if not ctype.startswith("image/"):
+            print(f"[KOBO] content-type inattendu '{ctype}' pour {url}")
+            return None
+        img = Image.open(io.BytesIO(resp.content))
+        img = ImageOps.exif_transpose(img).convert("RGB")
+        img.thumbnail((THUMB_MAX_PX, THUMB_MAX_PX), Image.LANCZOS)
+        buf = io.BytesIO()
+        img.save(buf, format="JPEG", quality=72, optimize=True)
+        b64 = base64.b64encode(buf.getvalue()).decode("ascii")
+        return f"data:image/jpeg;base64,{b64}"
+    except Exception as e:
+        print(f"[KOBO] exception {type(e).__name__}: {e} pour {url}")  # au lieu d'un return muet
+        return None
     user = os.getenv("KOBO_USER", "")
     pwd = os.getenv("KOBO_PASSWORD", "")
     if needs_auth and not (user and pwd):
