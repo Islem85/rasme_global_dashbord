@@ -1072,7 +1072,7 @@ else:
                     _first.get("download_large_url") or ""
                 )
             else:
-                url = ""
+                url = row.get("photo_1_url") or row.get("photo_2_url") or ""
             # ──────────────────────────────────────────────────────────────
             _dt        = row.get("collection_date")
             date_str   = _dt.strftime("%d %b %Y") if (_dt is not None and _dt == _dt) else "—"
