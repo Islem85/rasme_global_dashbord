@@ -90,7 +90,7 @@ def main() -> None:
     # Cela permet à Streamlit de préparer la structure de la barre latérale
     pages = [
         st.Page("global_view.py", title=t("nav_global", lang), icon="🌍", default=True),
-        st.Page("country_view.py", title=t("nav_country", lang), icon="🇲🇦"),
+        st.Page("country_view.py", title=t("nav_country", lang), icon="📍"),
     ]
     nav = st.navigation(pages, position="sidebar")
 
