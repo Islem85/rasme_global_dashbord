@@ -35,6 +35,7 @@ from datetime import datetime
 
 from i18n import t
 from ui import (
+    _logo_data_uri,
     dark_plotly,
     fmt_delta,
     fmt_int,
@@ -52,6 +53,16 @@ filters = st.session_state.get("filters", {})
 
 # ── Top toolbar: PDF export ─────────────────────────────────────────────────
 pdf_export_button(lang)
+
+# Icone Vue par Pays
+_country_icon = _logo_data_uri("worlwide_2425072.png")
+if _country_icon:
+    st.markdown(
+        f'<div style="text-align:center;margin:0 0 14px 0;">'
+        f'<img src="{_country_icon}" alt="Vue par Pays" style="height:72px;width:auto;display:inline-block;"/>'
+        f'</div>',
+        unsafe_allow_html=True,
+    )
 
 # ── HERO ────────────────────────────────────────────────────────────────────
 hero(
