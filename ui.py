@@ -20,7 +20,8 @@ from db import date_bounds, filter_options
 from i18n import t
 
 
-ASSETS = Path(__file__).parent / "assets"
+_BASE = Path(__file__).parent
+ASSETS = (_BASE / "assets") if (_BASE / "assets").is_dir() else _BASE
 
 
 _MIME_BY_EXT = {
